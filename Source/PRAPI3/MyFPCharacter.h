@@ -61,7 +61,7 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Collision")
 		UCapsuleComponent* CapsuleComponent;
-	
+
 	UPROPERTY(EditAnywhere, Category = "Camera")
 		UCameraComponent* cam;
 
