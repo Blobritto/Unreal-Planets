@@ -26,6 +26,9 @@ public:
 
 	AActor* playerActor;
 	AMyFPCharacter* player;
+	float scale;
+	float gravityMultiplier;
+	//FVector newLocation;
 
 	//void RotatePlayer(AMyFPCharacter* player);
 

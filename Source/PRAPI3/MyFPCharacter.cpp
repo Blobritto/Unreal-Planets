@@ -17,8 +17,8 @@ AMyFPCharacter::AMyFPCharacter()
 	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule Component"));
 	//CapsuleComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 	RootComponent = CapsuleComponent;
-	
-	
+
+
 	cam = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	cam->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 	cam->SetWorldLocation(FVector(0, 0, 40));
@@ -99,7 +99,7 @@ void AMyFPCharacter::VertRot(float value)
 
 void AMyFPCharacter::Jump()
 {
-	CapsuleComponent->UPrimitiveComponent::SetPhysicsLinearVelocity(GetActorUpVector()*500);
+	CapsuleComponent->UPrimitiveComponent::SetPhysicsLinearVelocity(GetActorUpVector() * 500);
 }
 
 
@@ -132,6 +132,6 @@ FVector AMyFPCharacter::GetForward()
 
 void AMyFPCharacter::Gravitate(FVector value)
 {
-	CapsuleComponent->UPrimitiveComponent::AddForce(value*50000);
+	CapsuleComponent->UPrimitiveComponent::AddForce(value * 50000);
 }
 
