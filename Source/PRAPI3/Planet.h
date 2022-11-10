@@ -28,6 +28,7 @@ public:
 	AMyFPCharacter* player;
 	float scale;
 	float gravityMultiplier;
+	float distanceToPlayer;
 	//FVector newLocation;
 
 	//void RotatePlayer(AMyFPCharacter* player);
