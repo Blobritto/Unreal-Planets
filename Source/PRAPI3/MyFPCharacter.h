@@ -13,6 +13,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Actor.h"
 #include "Components/PrimitiveComponent.h"
+#include "Runtime/Engine/Public/TimerManager.h"
 #include "Math/TransformNonVectorized.h"
 #include "MyFPCharacter.generated.h"
 
@@ -43,6 +44,7 @@ public:
 	FVector GetLocation();
 	FVector GetForward();
 	void Gravitate(FVector value);
+	void JetPack(float value);
 	UCapsuleComponent* MeshRootComp;
 
 
@@ -50,9 +52,17 @@ public:
 	void VertMove(float value);
 
 	void HoriRot(float value);
+	void RollRot();
 	void VertRot(float value);
 
-	void Jump();
+	//void Jump();
+	//void Launch();
+	void Fly(float value);
+
+	void SetPlayerState(int value);
+	int playerState;
+	bool rollKey;
+
 
 
 private:
@@ -64,6 +74,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Camera")
 		UCameraComponent* cam;
+
+	//UPROPERTY(EditAnywhere) TSubclassOf<UUserWidget> ShipWidget;
+	//UUserWidget* shipWidgetInstance;
 
 
 };

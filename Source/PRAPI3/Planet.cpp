@@ -24,15 +24,22 @@ void APlanet::BeginPlay()
 	playerActor = UGameplayStatics::GetActorOfClass(GetWorld(), classToFind);
 	player = Cast<AMyFPCharacter>(playerActor);
 
-	scale = FMath::RandRange(10, 1000);
+	scale = FMath::RandRange(400, 1500);
 	AActor::SetActorScale3D(FVector(scale, scale, scale));
 	gravityMultiplier = (FMath::Sqrt(scale) / 15);
-	int newLocationX = FMath::RandRange(-10000, 10000);
-	int newLocationY = FMath::RandRange(-10000, 10000);
-	int newLocationZ = FMath::RandRange(-10000, 10000);
+	int newLocationX = FMath::RandRange(-1000000, 1000000);
+	int newLocationY = FMath::RandRange(-1000000, 1000000);
+	int newLocationZ = FMath::RandRange(-1000000, 1000000);
+
+	int newRotationX = FMath::RandRange(0, 360);
+	int newRotationY = FMath::RandRange(0, 360);
+	int newRotationZ = FMath::RandRange(0, 360);
+
 	FVector newLocation = FVector(newLocationX, newLocationY, newLocationZ);
+	FRotator newRotation = FRotator(newRotationX, newRotationY, newRotationZ);
 
 	sphere->USceneComponent::SetWorldLocation(newLocation);
+	sphere->USceneComponent::SetWorldRotation(newRotation);
 
 }
 
@@ -41,25 +48,42 @@ void APlanet::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	distanceToPlayer = AActor::GetDistanceTo(player);
+	sphere->AddLocalRotation(FRotator(0, 0.04f, 0));
+
+	if (distanceToPlayer < (scale * 200))
+	{
+		FRotator rot = UKismetMathLibrary::FindLookAtRotation(player->GetLocation(), GetActorLocation());
+		FRotator rotz = UKismetMathLibrary::MakeRotFromZX(UKismetMathLibrary::GetForwardVector(rot), player->GetForward());
+		rotz.Add(0, 0, 180);
+		FVector GravityScale = (UKismetMathLibrary::GetForwardVector(rot) * (scale/100));
 
 
-	FRotator rot = UKismetMathLibrary::FindLookAtRotation(player->GetLocation(), GetActorLocation());
+		if (distanceToPlayer > (scale * 100))
+		{
+			player->Gravitate(GravityScale * 0.5);
+			player->SetPlayerState(1);
+		}
 
-	FRotator rotz = UKismetMathLibrary::MakeRotFromZX(UKismetMathLibrary::GetForwardVector(rot), player->GetForward());
+		else
+		{
+			player->SetRotation(FMath::RInterpTo(player->GetRotation(), rotz, DeltaTime, 2));
+			player->Gravitate(GravityScale);
+			player->rollKey = false;
+			player->SetPlayerState(2);
+		}
 
-
-
-
-	rotz.Add(0, 0, 180);
-
-
-	player->SetRotation(rotz);
-
-	FVector GravityScale = (UKismetMathLibrary::GetForwardVector(rot));
-
-
-	player->Gravitate(GravityScale * gravityMultiplier);
+	}
+	else
+	{
+		//player->SetPlayerState(1);
+	}
 
 }
+
+
+
+
+///UPTODATECHECK
 
 
