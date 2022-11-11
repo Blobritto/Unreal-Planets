@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "MyFPCharacter.h"
 
 // Sets default values
@@ -11,40 +8,32 @@ AMyFPCharacter::AMyFPCharacter()
 
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
-	//bUseControllerRotationYaw = false;
-	//uint32 bUsePawnControlRotation = true;
-
+	// Creates the capsule mesh component and sets it as the root component for the actor. This is what collides with the world and has the forces applied to.
 	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule Component"));
-	//CapsuleComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 	RootComponent = CapsuleComponent;
 
-
+	// Creates the camera component and attaches it to the root component, here being the capsule mesh.
 	cam = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	cam->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	// The location of the camera is moved up slightly to give a better player height, so the camera is not constantly on the floor.
 	cam->SetWorldLocation(FVector(0, 0, 40));
 
+	// Sets the playerstate to be 1 by default so space controls are useable.
+	// Sets the rollkey to be false, as this is not the standard rotation axis for a player camera.
 	playerState = 1;
 	rollKey = false;
-
-	//MeshRootComp = Cast<UCapsuleComponent>(GetRootComponent());
 }
 
 // Called when the game starts or when spawned
 void AMyFPCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	//shipWidgetInstance = Cast<UUserWidget>(CreateWidget(GetWorld(), ShipWidget));
-	//cam->shipWidgetInstance->AddToViewport();
-
-
 }
 
 // Called every frame
 void AMyFPCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//rollKey = false;
 }
 
 // Called to bind functionality to input
@@ -52,76 +41,97 @@ void AMyFPCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	// Binds movement of the player.
 	InputComponent->BindAxis("Hori", this, &AMyFPCharacter::HoriMove);
 	InputComponent->BindAxis("Vert", this, &AMyFPCharacter::VertMove);
+	InputComponent->BindAxis("Fly", this, &AMyFPCharacter::Fly);
+	InputComponent->BindAxis("JetPack", this, &AMyFPCharacter::JetPack);
 
+	// Binds rotation of the player and the player's camera component.
 	InputComponent->BindAxis("HoriRot", this, &AMyFPCharacter::HoriRot);
 	InputComponent->BindAxis("VertRot", this, &AMyFPCharacter::VertRot);
 
-	InputComponent->BindAxis("Fly", this, &AMyFPCharacter::Fly);
-
-	InputComponent->BindAction("RollRot",IE_Pressed, this, &AMyFPCharacter::RollRot);
-
-	//InputComponent->BindAction("Jump", IE_Pressed, this, &AMyFPCharacter::Jump);
-	//InputComponent->BindAction("Launch", IE_Pressed, this, &AMyFPCharacter::Launch);
-	InputComponent->BindAxis("JetPack", this, &AMyFPCharacter::JetPack);
+	// Toggles the roll rotation while in space.
+	InputComponent->BindAction("RollRot", IE_Pressed, this, &AMyFPCharacter::RollRot);
 }
 
-
+// Adds a force to the player pawn to create left and right player movement.
 void AMyFPCharacter::HoriMove(float value)
 {
+	// Only calls the rest of the function if a value is registered, simply for optimisation.
 	if (value)
 	{
 		if (playerState == 1)
 		{
+			// If the player is floating through space, make them move 5 times faster than normal, simply to make space travel shorter and less tedious.
 			value *= 5;
 		}
 		CapsuleComponent->UPrimitiveComponent::AddForce(CapsuleComponent->USceneComponent::GetRightVector() * 700000 * value);
 	}
 }
 
-
+// Adds a force to the player pawn to create forward and backward player movement.
 void AMyFPCharacter::VertMove(float value)
 {
+	// Only calls the rest of the function if a value is registered, simply for optimisation.
 	if (value)
 	{
 		if (playerState == 1)
 		{
+			// If the player is floating through space, make them move 5 times faster than normal, simply to make space travel shorter and less tedious.
 			value *= 5;
 		}
-		CapsuleComponent->UPrimitiveComponent::AddForce(CapsuleComponent->USceneComponent::GetForwardVector() * 450000 * value);
+		CapsuleComponent->UPrimitiveComponent::AddForce(CapsuleComponent->USceneComponent::GetForwardVector() * 700000 * value);
 	}
 }
 
-
+// Rotates the player / camera based on the X axis of the mouse.
 void AMyFPCharacter::HoriRot(float value)
 {
+	// Only calls the rest of the function if a value is registered, simply for optimisation.
+	if (value)
+	{
+		if (playerState == 1 && rollKey == true)
+		{
+			// If the roll key is toggled on, and the player is in space, the X axis of the player rotates, rather than the Z, to give 6 degrees of freedom of movement.
+			AddActorLocalRotation(UKismetMathLibrary::MakeRotator(value, 0, 0));
+		}
+		else
+		{	
+			// If these conditions are not both met, the player rotates on the Z axis as is standard for player controllers.
+			AddActorLocalRotation(UKismetMathLibrary::MakeRotator(0, 0, value));
+		}
+	}
+}
+
+// Rotates the player / camera based on the Y axis of the mouse.
+void AMyFPCharacter::VertRot(float value)
+{
+	// Only calls the rest of the function if a value is registered, simply for optimisation.
 	if (value)
 	{
 		if (playerState == 1)
 		{
-			if (rollKey == true)
-			{
-				FRotator rotat = UKismetMathLibrary::MakeRotator(value, 0, 0);
-				AddActorLocalRotation(rotat);
-			}
-			else
-			{
-				FRotator rotat1 = UKismetMathLibrary::MakeRotator(0, 0, value);
-				AddActorLocalRotation(rotat1);
-			}
+			// Turns the value from the input into a rotator and adds it to the player local rotation.
+			AddActorLocalRotation(UKismetMathLibrary::MakeRotator(0, value, 0));
 		}
-		else if (playerState == 2)
+		else
 		{
-			FRotator rotat2 = UKismetMathLibrary::MakeRotator(0, 0, value);
-			AddActorLocalRotation(rotat2);
+			// Sets bounds for the furthest up and down the player can look.
+			float temp = cam->GetRelativeRotation().Pitch + value;
+			if (temp < 80 && temp > -80)
+			{
+				cam->AddLocalRotation(FRotator(value, 0, 0));
+			}
 		}
 	}
 }
 
-
+// A flip switch to toggle between normal rotation and roll rotation.
 void AMyFPCharacter::RollRot()
 {
+	// If in one state, change to the other.
+	// But only when the player is in space.
 	if (playerState == 1)
 	{
 		if (rollKey == true)
@@ -135,44 +145,10 @@ void AMyFPCharacter::RollRot()
 	}
 }
 
-
-void AMyFPCharacter::VertRot(float value)
-{
-	if (value)
-	{
-		if (playerState == 1)
-		{
-			FRotator rotat;
-			rotat = UKismetMathLibrary::MakeRotator(0, value, 0);
-			AddActorLocalRotation(rotat);
-		}
-		else
-		{
-			float temp = cam->GetRelativeRotation().Pitch + value;
-
-			if (temp < 80 && temp > -80)
-			{
-				cam->AddLocalRotation(FRotator(value, 0, 0));
-			}
-		}
-	}
-}
-
-/*
-void AMyFPCharacter::Jump()
-{
-	if (playerState == 1)
-	{
-	}
-	else
-	{
-		CapsuleComponent->UPrimitiveComponent::AddImpulse(GetActorUpVector() * 200000);
-	}
-}
-*/
-
+// Give the player vertical movement when in space for a smoother travel experience.
 void AMyFPCharacter::Fly(float value)
 {
+	// Only calls the rest of the function if a value is registered, simply for optimisation.
 	if (value)
 	{
 		if (playerState == 1)
@@ -182,75 +158,49 @@ void AMyFPCharacter::Fly(float value)
 	}
 }
 
-
-
-
-/*
-void AMyFPCharacter::Launch()
-{
-	if (playerState == 1)
-	{
-		CapsuleComponent->UPrimitiveComponent::AddForce(CapsuleComponent->USceneComponent::GetForwardVector() * 800000000);
-	}
-
-		
-	//FTimerDelegate TimerDelegate;
-	//TimerDelegate.BindLambda([&]
-	//	{
-	//		playerState = 1;
-	//		//rollKey = false;
-	//		FRotator camRot = cam->USceneComponent::GetComponentRotation();
-	//		FRotator realCamRot = FRotator(camRot.Pitch, 0, 0);
-	//		cam->USceneComponent::SetRelativeRotation(FRotator(0, 0, 0));
-	//		AActor::SetActorRotation(camRot);
-	//	});
-	//
-	//FTimerHandle TimerHandle;
-	//GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, 0.2f, false);
-}
-*/
-
-
+// Gets the rotation off the actor.
 FRotator AMyFPCharacter::GetRotation()
 {
 	FRotator rotation = AActor::GetActorRotation();
-
 	return rotation;
 }
 
+// Sets the rotation of the actor.
 void AMyFPCharacter::SetRotation(FRotator value)
 {
 	AActor::SetActorRotation(value);
 }
 
+// Gets the location of the actor.
 FVector AMyFPCharacter::GetLocation()
 {
 	FVector location = AActor::GetActorLocation();
-
 	return location;
 }
 
+// Gets the forward vector of the actor.
 FVector AMyFPCharacter::GetForward()
 {
 	FVector forward = GetActorForwardVector();
-
 	return forward;
 }
 
-
+// Adds a force to the player, primarily in a downward direction.
 void AMyFPCharacter::Gravitate(FVector value)
 {
 	CapsuleComponent->UPrimitiveComponent::AddForce(value * 50000);
 }
 
-
+// Sets the playerstate of the player.
 void AMyFPCharacter::SetPlayerState(int value)
 {
 	playerState = value;
 
 	if (value == 1)
 	{
-		//rollKey = false;
+		// If switching from on planet to space, the player is reoriented so that the camera is locally 0, 0, 0 to the actor.
+		// If I don't do this, the rotation of the player in space is all wrong, as the camera is stuck facing in the wrong direction.
+		// In space, vertical rotation is the whole actor rather than the camera component.
 		FRotator camRot = cam->USceneComponent::GetComponentRotation();
 		FRotator realCamRot = FRotator(camRot.Pitch, 0, 0);
 		cam->USceneComponent::SetRelativeRotation(FRotator(0, 0, 0));
@@ -258,8 +208,10 @@ void AMyFPCharacter::SetPlayerState(int value)
 	}
 }
 
+// Gives the player a vertical boost when on a planet.
 void AMyFPCharacter::JetPack(float value)
 {
+	// Only calls the rest of the function if a value is registered, simply for optimisation.
 	if (value && playerState == 2)
 	{
 		CapsuleComponent->UPrimitiveComponent::AddForce(CapsuleComponent->USceneComponent::GetUpVector() * value * 1000000);

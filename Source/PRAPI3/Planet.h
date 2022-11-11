@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -19,20 +17,18 @@ class PRAPI3_API APlanet : public AActor
 {
 	GENERATED_BODY()
 
-
 public:
 	// Sets default values for this actor's properties
 	APlanet();
 
+	// References for the player in the planet script.
 	AActor* playerActor;
 	AMyFPCharacter* player;
+	
+	// Planet variables
 	float scale;
 	float gravityMultiplier;
 	float distanceToPlayer;
-	//FVector newLocation;
-
-	//void RotatePlayer(AMyFPCharacter* player);
-
 
 protected:
 	// Called when the game starts or when spawned
@@ -42,10 +38,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-
 private:
-
+	// Create the sphere component.
 	UPROPERTY(EditAnywhere, Category = "Sphere")
 		USphereComponent* sphere;
-
 };

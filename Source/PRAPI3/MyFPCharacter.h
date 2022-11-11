@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -10,7 +8,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/SceneComponent.h"
 #include "Math/Rotator.h"
-
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Actor.h"
 #include "Components/PrimitiveComponent.h"
@@ -39,45 +36,35 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-
+	// Setters.
 	void SetRotation(FRotator value);
+	void SetPlayerState(int value);
+
+	// Getters.
 	FRotator GetRotation();
 	FVector GetLocation();
 	FVector GetForward();
-	void Gravitate(FVector value);
-	void JetPack(float value);
-	UCapsuleComponent* MeshRootComp;
 
-
+	// Player controls.
 	void HoriMove(float value);
 	void VertMove(float value);
-
 	void HoriRot(float value);
 	void RollRot();
 	void VertRot(float value);
-
-	//void Jump();
-	//void Launch();
 	void Fly(float value);
+	void Gravitate(FVector value);
+	void JetPack(float value);
 
-	void SetPlayerState(int value);
+	// Player variables.
 	int playerState;
 	bool rollKey;
 
-
-
 private:
-
-
-
+	// Create the capsule component.
 	UPROPERTY(EditAnywhere, Category = "Collision")
 		UCapsuleComponent* CapsuleComponent;
 
+	// Create the camera component.
 	UPROPERTY(EditAnywhere, Category = "Camera")
 		UCameraComponent* cam;
-
-	//UPROPERTY(EditAnywhere) TSubclassOf<UUserWidget> ShipWidget;
-	//UUserWidget* shipWidgetInstance;
-
-
 };
